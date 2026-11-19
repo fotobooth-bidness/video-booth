@@ -124,6 +124,10 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 .sheet.on{display:grid;animation:fadeIn .45s ease both}
 @keyframes fadeIn{from{opacity:0}to{opacity:1}}
 #thanks .card{position:relative;z-index:3;display:grid;grid-template-columns:1fr auto;gap:6vw;align-items:center;max-width:88vw}
+#thanks .card.noqr{grid-template-columns:1fr;justify-items:center;text-align:center}
+#thanks .card.noqr .left{text-align:center}
+#thanks .card.noqr .msg,#thanks .card.noqr .sig{margin-left:auto;margin-right:auto}
+#thanks .card.noqr .done-row{justify-content:center}
 #thanks .ty{font-family:var(--display);font-size:clamp(48px,10vh,104px);font-variant:small-caps;line-height:1;color:var(--ink)}
 #thanks .msg{font-size:clamp(20px,3.1vh,30px);font-style:italic;color:var(--ink-2);margin-top:2.4vh;max-width:28ch;line-height:1.35}
 #thanks .sig{font-family:var(--display);font-variant:small-caps;letter-spacing:.08em;color:var(--taupe);margin-top:2.4vh;font-size:clamp(18px,2.6vh,26px)}
@@ -334,7 +338,7 @@ body.thx #stage,body.thx #cornerHot{opacity:0;pointer-events:none}
 <div class="sheet" id="saving"><p>Saving your message…</p></div>
 
 <div class="sheet" id="thanks">
-  <div class="card">
+  <div class="card" id="thanksCard">
     <div class="left">
       <div class="ty" id="tyTitle">Thank you</div>
       <div class="msg" id="tyMsg"></div>
@@ -3276,6 +3280,7 @@ function showThanks(rec) {
   else if (S.uploadUrl) { link = shareUrl(rec); $('#qrLabel').innerHTML = 'Scan to download<br>your message'; }
   else if (S.fallbackUrl) { link = S.fallbackUrl; $('#qrLabel').innerHTML = 'Scan to see<br>our guest book'; }
   $('#qrBox').style.display = link ? 'flex' : 'none';
+  $('#thanksCard').classList.toggle('noqr', !link);
   $('#upStatus').textContent = DEMO ? 'Demo — no upload' : S.uploadUrl ? 'Uploading…' : '';
   if (link) $('#qr').innerHTML = qrSvg(link);
   $('#thanks').classList.add('on'); document.body.classList.add('thx');
