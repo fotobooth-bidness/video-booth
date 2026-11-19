@@ -289,10 +289,10 @@ body.thx #stage,body.thx #cornerHot{opacity:0;pointer-events:none}
         <li><b>2</b>Tap the screen to begin</li>
         <li><b>3</b>Speak after the beep</li>
       </ul>
-      <div class="tap">
+      <button class="tap" id="btnBegin" type="button">
         <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 13c0-4 4.5-6 10-6s10 2 10 6l-1 2.2c-.3.7-1 1-1.7.8l-3.4-1c-.6-.2-1-.8-.9-1.4l.2-1.6c-1-.4-2.3-.6-3.2-.6s-2.2.2-3.2.6l.2 1.6c.1.6-.3 1.2-.9 1.4l-3.4 1c-.7.2-1.4-.1-1.7-.8L6 13Z"/><path d="M9 25h14l-2-7h-10z"/><circle cx="16" cy="21.2" r="1.6"/></svg>
         Tap to begin
-      </div>
+      </button>
       <div class="lede" id="limitNote" style="font-size:clamp(16px,2.2vh,21px);margin-top:2.2vh">You'll have up to 30 seconds</div>
       <div class="line-ok"><span>Phone line</span><div class="meter" id="meter"><span></span><span></span><span></span><span></span><span></span></div></div>
     </div>
@@ -3404,7 +3404,8 @@ document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('gesturestart', e => e.preventDefault());
 
 /* ---------- events ---------- */
-$('#stage').addEventListener('pointerup', e => {
+$('#btnBegin').addEventListener('pointerup', e => {
+  e.stopPropagation();
   if (state === 'attract') beginCountdown();
 });
 $('#btnStop').addEventListener('click', e => { e.stopPropagation(); stopRecording(); });
