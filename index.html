@@ -414,13 +414,16 @@ body.thx #stage,body.thx #cornerHot{opacity:0;pointer-events:none}
         <p class="hint" style="margin-top:10px">Plays when a guest taps to start. The 3-2-1 countdown shows over the last 3 seconds, and recording starts the moment the clip ends, so end it with the beep. Silence after the beep is trimmed automatically. With no greeting, guests get a 3-second countdown and a beep.</p>
       </div>
       <label>Greeting volume<input type="range" min="0" max="2" step="0.05" data-k="greetVol"></label>
-      <label id="gOutWrap" style="display:none">Greeting plays through<select id="selOut"></select></label>
+      <label id="gOutWrap" style="display:none">Greeting &amp; message playback plays through<select id="selOut"></select></label>
+      <p class="hint" id="gOutHint" style="display:none;grid-column:1/-1;margin-top:-6px">Covers the couple's greeting when guests tap to start, and the guest's own recording playing back on the review screen — so everyone standing around can hear both, not just whoever's holding the handset.</p>
     </div>
 
     <h3>Devices</h3>
     <div class="grid">
       <label>Camera<select id="selCam"></select></label>
       <label>Microphone (telephone handset)<select id="selMic"></select></label>
+      <label>Mic sensitivity<input type="range" min="0.1" max="1.5" step="0.05" data-k="micGain"></label>
+      <p class="hint full" style="grid-column:1/-1;margin-top:-6px">If the level meter below is constantly red, lower this — many handset mics run hot and need to be turned down rather than up.</p>
       <div class="full row" style="grid-column:1/-1">
         <div id="adminMeter"></div>
         <button class="sbtn" id="aTestMic">Test mic (5s)</button>
@@ -2773,7 +2776,7 @@ const DEFAULTS = {
   names: 'Trung & Tracy', subtitle: 'Video Guest Book',
   thanksTitle: 'Thank you', thanksMsg: 'Your message means the world to us. We can’t wait to watch it together.',
   thanksSig: 'With love, Trung & Tracy',
-  maxSec: 30, vcr: 'classic', phone: 'classic', stamp: true, mirror: true, noiseSup: true, greetVol: 1, outId: '',
+  maxSec: 30, vcr: 'classic', phone: 'classic', stamp: true, mirror: true, noiseSup: true, greetVol: 1, outId: '', micGain: 0.7,
   camId: '', micId: '', uploadUrl: '', uploadKey: '', fallbackUrl: '', thanksTimeout: 45, dlCopy: false, pin: '1234'
 };
 const LS_KEY = 'vgb.settings.v1';
@@ -2830,14 +2833,26 @@ const DB = {
 };
 
 /* ---------- audio: telephone chain ---------- */
+const BEEP_SRC = 'data:audio/mpeg;base64,SUQzBAAAAAAAbFRJVDIAAAAkAAADQXJjaGl2ZWQsIFRlc3QgVG9uZSwgMiBQb3AsIDI0IEZQUwBUQ09QAAAAEAAAA0VwaWRlbWljIFNvdW5kAFRYWFgAAAAQAAADY29tbWVudABObyBURE0AAAAAAAAAAAAAAP/7VAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAFhpbmcAAAAPAAAAAwAABkgAmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYmJiYs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Ozs7Oz////////////////////////////////////////////AAAAAExhdmYgbGFtZQAAAAAAAAAAAAAAACQDcAAAAAAAAAZIws9Uh//71GQAAAJ1ClKdPGAIAAANIKAAARN5AUn56hYAAAA0gwAAAAp7Zb1er1er1ezx6Uhn+QcQsNWJuXNRs4hAQBAEHLB8P4IAhrB994gBCJPP8CO0B/gR2gP5cHAQcUBAHw/E4OAhkAfflPeXB8HwICAIYPgfgAABI4CwAwGBIIBgUBgAUBAwFQHhEACYBAK/lgE0wSQVgKOKEDBCH92DywEuYUYLxghgTDTZbPCsCXwMs9A2y0DEogFC+Bgg4ckFzwNgkG8omHD4hyRcofEKSG3xCo5QuYXMTJFSZPF4y+LlFykOHOHOJl0Vskr8ipFTIixFjEu//5FTIvF4xLpdS//8ixFjEul0yLxeEv/nQ6r+cBABWwAAAJgEgQgOTCQZAwCiwCgABx4BREC5hsKJhxE5lCKhhuA0AsBZrGgah0bKr5lAAAAWf8AImFgAUwDQAzANAdGAFAwFUwiACjBaCKMHwEwwfw4zF9G9MQm98w2SDDEoAEMFcDUwHwKzAjABhhkBhk3JOID3+/AwRHLgFXWACSCWSJaER7/dZ3OnyoDAwWjCIvTL8wDJBbwIPZn0SYCFswptswcJ4zKVE2x1gzfcAmcIwrBcz6DkxXDQ2nIw02hU2aTTFgqNyxYxCszKCtAUZMOjMz+YzAJgNxQg1IDzdJ0M8rgzuxjI5HAwgCBoguZGHpkQ1mCigQHCBAcClSAIGEgBBwXDhOalYpoECGvi+Z3MhntbGICqYqJ5gwLEBFhSGi7wcA02gwADQQMHm0ycaB48maRMZAFpkIzstAIWMBhRBOQhKo093E6GjqxpxuoYEPBlE6hh7M6CUyeKjKJ0EJliyNqGLgJO3Z130626MkW5A7uK4MdGQxUADMYSMjBcyQYx0sGKyyYbBbImBQ2wqtfcFlMFuu98gh9p8AQJB1GZUAZkEEGQSoDCeYcKBg4IBiWBR5MeEkwCSJQ2Grehp9pt4q1uWPxNy+jsy9+5ROTtqWA0JoZlYOJgsYJBgWB4WByMhEFyYIGCASFQYP/7RGT4gfGQC033dYAIAAANIOAAAQmsLR3154AoAAA0goAABKg2llNSCauFNKq8erZ4yyvn3G3P1OY5WJyv3LG3P4c3lYnM+6xtz+HwW3jfs6aS2CDHXeRnLSmxwS6jrteay9TxO+6jXWtPS8LuOO4zWXidJ33ElNyO1cMpVdj1bPlLqO1cO0249TZ4VdRGU4Z1txJMQU1FMy4xMDBVVVVVVVVVVVVVVf/7pGT6gA8IkEz+d4AQAAANIMAAAAAAAf4cAAAgAAA0g4AABFVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVVQ==';
 const Audio = {
-  ctx: null, src: null, stream: null, dest: null, analyser: null, chainIn: null, nodes: [], hiss: null,
+  ctx: null, src: null, stream: null, dest: null, analyser: null, chainIn: null, inGain: null, nodes: [], hiss: null, beepBuf: null,
   init() {
     this.ctx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
     this.dest = this.ctx.createMediaStreamDestination();
     this.analyser = this.ctx.createAnalyser(); this.analyser.fftSize = 512;
     this.chainIn = this.ctx.createGain();
+    this.inGain = this.ctx.createGain(); this.inGain.gain.value = S.micGain;
+    this.inGain.connect(this.chainIn);
     this.buildChain();
+    this.loadBeep();
+  },
+  setMicGain(v) { if (this.inGain) this.inGain.gain.value = v; },
+  async loadBeep() {
+    try {
+      const res = await fetch(BEEP_SRC);
+      const buf = await res.arrayBuffer();
+      this.beepBuf = await this.ctx.decodeAudioData(buf);
+    } catch (e) { console.warn('beep load', e); }
   },
   async start() {
     if (this.stream) this.stream.getTracks().forEach(t => t.stop());
@@ -2853,7 +2868,7 @@ const Audio = {
       else throw e;
     }
     this.src = this.ctx.createMediaStreamSource(this.stream);
-    this.src.connect(this.chainIn);
+    this.src.connect(this.inGain);
   },
   curve(k) {
     const n = 2048, c = new Float32Array(n);
@@ -2899,6 +2914,13 @@ const Audio = {
   },
   beep(freq = 880, dur = 0.09, vol = 0.12) {
     if (!this.ctx) return;
+    if (this.beepBuf) {
+      const src = this.ctx.createBufferSource(), g = this.ctx.createGain();
+      src.buffer = this.beepBuf;
+      g.gain.value = Math.min(4, Math.max(1, vol * 10));
+      src.connect(g); g.connect(this.ctx.destination); src.start();
+      return;
+    }
     const o = this.ctx.createOscillator(), g = this.ctx.createGain(), t = this.ctx.currentTime;
     o.type = 'sine'; o.frequency.value = freq;
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
@@ -3187,7 +3209,9 @@ function setState(s) {
     showView('v-review'); osd('PLAY ▶', fmtC(0));
     $('#screen').style.display = 'none'; pb.style.display = 'block';
     pb.src = Rec.url; pb.currentTime = 0; pb.muted = false;
-    pb.play().catch(() => { $('#replay').style.display = 'grid'; });
+    const startPb = () => pb.play().catch(() => { $('#replay').style.display = 'grid'; });
+    if (S.outId && typeof pb.setSinkId === 'function') pb.setSinkId(S.outId).then(startPb).catch(startPb);
+    else startPb();
     idleTimer = setTimeout(() => { if (state === 'review') keep(); }, 120000);
   }
 }
@@ -3449,6 +3473,8 @@ $$('#admin [data-k]').forEach(el => el.addEventListener('change', () => {
   if (k === 'noiseSup') Audio.start().catch(e => toast('Mic: ' + e.message));
   saveSettings(); applyText();
 }));
+const micGainEl = $('#admin [data-k="micGain"]');
+if (micGainEl) micGainEl.addEventListener('input', e => Audio.setMicGain(+e.target.value));
 $('#aClose').addEventListener('click', () => {
   $$('#admin [data-k]').forEach(el => el.dispatchEvent(new Event('change')));
   $('#admin').classList.remove('on'); setState('attract'); kiosk();
@@ -3469,6 +3495,7 @@ async function listDevices() {
   const outs = ds.filter(d => d.kind === 'audiooutput' && d.deviceId && d.deviceId !== 'default');
   const canSink = Audio.ctx && typeof Audio.ctx.setSinkId === 'function';
   $('#gOutWrap').style.display = canSink && outs.length > 1 ? 'flex' : 'none';
+  $('#gOutHint').style.display = canSink && outs.length > 1 ? 'block' : 'none';
   if (canSink) {
     const sel = $('#selOut'); sel.innerHTML = '<option value="">Default speaker</option>';
     outs.forEach((d, i) => { const o = document.createElement('option'); o.value = d.deviceId; o.textContent = d.label || `Output ${i + 1}`; sel.appendChild(o); });
@@ -3538,9 +3565,10 @@ async function refreshRecs() {
   const all = (await DB.all()).sort((a, b) => b.created - a.created);
   const bytes = all.reduce((s, r) => s + (r.blob ? r.blob.size : 0), 0);
   const pend = all.filter(r => !r.uploaded).length;
-  let quota = '';
+  let quota = '', persisted = '';
   try { const e = await navigator.storage.estimate(); quota = ` · ${(e.quota - e.usage) / 1e9 > 0 ? ((e.quota - e.usage) / 1e9).toFixed(1) + ' GB free' : ''}`; } catch (e) {}
-  $('#recStat').textContent = `${all.length} message${all.length === 1 ? '' : 's'} · ${(bytes / 1e6).toFixed(0)} MB${S.uploadUrl ? ` · ${pend} waiting to upload` : ''}${quota}`;
+  try { if (navigator.storage && navigator.storage.persisted) persisted = (await navigator.storage.persisted()) ? ' (persisted)' : ' (not persisted — may be cleared under low storage)'; } catch (e) {}
+  $('#recStat').textContent = `${all.length} message${all.length === 1 ? '' : 's'} · ${(bytes / 1e6).toFixed(0)} MB${S.uploadUrl ? ` · ${pend} waiting to upload` : ''}${quota}${persisted}`;
   const list = $('#recList'); list.innerHTML = '';
   all.forEach(r => {
     const d = new Date(r.created);
