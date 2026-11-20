@@ -308,27 +308,16 @@ body.thx #stage,body.thx #cornerHot{opacity:0;pointer-events:none}
       <div class="bar"><i id="barFill"></i></div>
       <button class="btn dark" id="btnStop">Finish</button>
     </div>
-
-    <div class="view" id="v-review">
-      <div class="h2">How did it look?</div>
-      <div class="lede">Watch your message back. Happy with it?</div>
-      <div class="btn-row">
-        <button class="btn line" id="btnRetake">Retake</button>
-        <button class="btn dark" id="btnKeep">Finish</button>
-      </div>
-    </div>
   </section>
 
   <section id="monitorWrap">
     <div id="monitor">
       <canvas id="screen" width="960" height="720"></canvas>
-      <video id="playback" playsinline></video>
       <div class="osd">
         <div class="tl" id="osdL">STBY</div>
         <div class="tr" id="osdR">SP</div>
       </div>
       <div id="count"></div>
-      <div id="replay"><div><svg viewBox="0 0 84 84" fill="none" stroke="#fff" stroke-width="2"><circle cx="42" cy="42" r="40"/><path d="M35 28v28l22-14z" fill="#fff"/></svg>Play again</div></div>
       <div id="flash"></div>
     </div>
   </section>
@@ -402,8 +391,8 @@ body.thx #stage,body.thx #cornerHot{opacity:0;pointer-events:none}
 
     <h3>Playback</h3>
     <div class="grid">
-      <label id="gOutWrap" style="display:none">Message playback plays through<select id="selOut"></select></label>
-      <p class="hint" id="gOutHint" style="display:none;grid-column:1/-1;margin-top:-6px">Routes the guest's own recording when it plays back on the review screen, so everyone standing around can hear it.</p>
+      <label id="gOutWrap" style="display:none">Beep sound plays through<select id="selOut"></select></label>
+      <p class="hint" id="gOutHint" style="display:none;grid-column:1/-1;margin-top:-6px">Routes the countdown beep to a specific speaker if the tablet's own speaker isn't loud enough.</p>
     </div>
 
     <h3>Devices</h3>
@@ -3183,24 +3172,14 @@ function showView(id) { $$('.view').forEach(v => v.classList.toggle('on', v.id =
 function setState(s) {
   state = s;
   clearTimeout(idleTimer);
-  const pb = $('#playback');
-  $('#replay').style.display = 'none';
   if (s === 'attract') {
     showView('v-attract'); osd('STBY', 'SP');
-    pb.pause(); pb.removeAttribute('src'); pb.load(); pb.style.display = 'none'; $('#screen').style.display = 'block';
+    $('#screen').style.display = 'block';
     $('#count').style.display = 'none'; Greeting.stop(); fbEnd = 0;
   } else if (s === 'count') {
     showView('v-count');
   } else if (s === 'record') {
     showView('v-record'); osd('<span class="rec-dot">●</span> REC', fmtC(0));
-  } else if (s === 'review') {
-    showView('v-review'); osd('PLAY ▶', fmtC(0));
-    $('#screen').style.display = 'none'; pb.style.display = 'block';
-    pb.src = Rec.url; pb.currentTime = 0; pb.muted = false;
-    const startPb = () => pb.play().catch(() => { $('#replay').style.display = 'grid'; });
-    if (S.outId && typeof pb.setSinkId === 'function') pb.setSinkId(S.outId).then(startPb).catch(startPb);
-    else startPb();
-    idleTimer = setTimeout(() => { if (state === 'review') keep(); }, 120000);
   }
 }
 
@@ -3213,7 +3192,7 @@ async function beginCountdown() {
   shownCount = 0;
   try { if (Audio.ctx.state !== 'running') await Audio.ctx.resume(); } catch (e) {}
   if (state !== 'count') return;
-  fbEnd = performance.now() + 3000;   // 3-2-1 then a beep
+  fbEnd = performance.now() + 5000;   // 5-4-3-2-1 then a beep
 }
 function showCount(n) {
   const c = $('#count');
@@ -3221,7 +3200,7 @@ function showCount(n) {
 }
 function tickGreeting(now) {
   const rem = Greeting.node ? Greeting.remaining() : fbEnd ? (fbEnd - now) / 1000 : 0;
-  const n = rem > 0 && rem <= 3 ? Math.ceil(rem) : 0;
+  const n = rem > 0 && rem <= 5 ? Math.ceil(rem) : 0;
   if (n !== shownCount) { shownCount = n; showCount(n); }
   if (Greeting.node && rem <= 0) { Greeting.node = null; goRecord(); return; }   // start on the exact frame the clip ends
   if (!Greeting.node && fbEnd && now >= fbEnd) {
@@ -3246,20 +3225,12 @@ async function stopRecording() {
   const f = $('#flash'); f.style.transition = 'none'; f.style.opacity = .5;
   requestAnimationFrame(() => { f.style.transition = 'opacity .5s'; f.style.opacity = 0; });
   await Rec.stop();
-  setState('review');
-}
-
-function retake() {
-  if (state !== 'review') return;
-  $('#playback').pause();
-  Rec.blob = null;
-  setState('attract');
+  await keep();
 }
 
 async function keep() {
-  if (state !== 'review' || !Rec.blob) return;
+  if (!Rec.blob) return;
   state = 'saving';
-  $('#playback').pause();
   $('#saving').classList.add('on');
   const id = makeId();
   const rec = { id, blob: Rec.blob, mime: Rec.mime, ext: Rec.ext(), created: Date.now(), dur: Math.round(Rec.dur), uploaded: false };
@@ -3356,7 +3327,7 @@ function downloadBlob(blob, name) {
 const meterBars = $$('#meter span');
 let lastLvl = 0;
 function loop(now) {
-  if (state !== 'review') Video.render(now);
+  Video.render(now);
   if (state === 'count') tickGreeting(now);
   if (state === 'record') {
     const el = (now - Rec.t0) / 1000, rem = Math.max(0, S.maxSec - el);
@@ -3365,8 +3336,6 @@ function loop(now) {
     $('#barFill').style.width = (el / S.maxSec * 100).toFixed(2) + '%';
     $('#osdR').textContent = fmtC(el);
     if (rem <= 0) stopRecording();
-  } else if (state === 'review') {
-    $('#osdR').textContent = fmtC($('#playback').currentTime || 0);
   }
   // mic meter
   const lv = Audio.level(); lastLvl = Math.max(lv, lastLvl * 0.86);
@@ -3393,12 +3362,7 @@ $('#btnBegin').addEventListener('pointerup', e => {
   if (state === 'attract') beginCountdown();
 });
 $('#btnStop').addEventListener('click', e => { e.stopPropagation(); stopRecording(); });
-$('#btnRetake').addEventListener('click', e => { e.stopPropagation(); retake(); });
-$('#btnKeep').addEventListener('click', e => { e.stopPropagation(); keep(); });
 $('#btnDone').addEventListener('click', closeThanks);
-$('#playback').addEventListener('ended', () => { $('#replay').style.display = 'grid'; });
-$('#replay').addEventListener('pointerup', e => { e.stopPropagation(); const p = $('#playback'); p.currentTime = 0; p.play(); $('#replay').style.display = 'none'; });
-$('#replay').style.pointerEvents = 'auto';
 
 /* ---------- admin: PIN ---------- */
 let cornerTaps = [];
