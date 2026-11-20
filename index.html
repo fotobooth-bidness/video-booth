@@ -285,22 +285,21 @@ body.thx #stage,body.thx #cornerHot{opacity:0;pointer-events:none}
     <div class="view on" id="v-attract">
       <div class="h2">Leave us a message</div>
       <ul class="steps">
-        <li><b>1</b>Pick up the phone</li>
-        <li><b>2</b>Tap the screen to begin</li>
-        <li><b>3</b>Speak after the beep</li>
+        <li><b>1</b>Tap the screen to begin</li>
+        <li><b>2</b>Speak after the beep</li>
       </ul>
       <button class="tap" id="btnBegin" type="button">
         <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 13c0-4 4.5-6 10-6s10 2 10 6l-1 2.2c-.3.7-1 1-1.7.8l-3.4-1c-.6-.2-1-.8-.9-1.4l.2-1.6c-1-.4-2.3-.6-3.2-.6s-2.2.2-3.2.6l.2 1.6c.1.6-.3 1.2-.9 1.4l-3.4 1c-.7.2-1.4-.1-1.7-.8L6 13Z"/><path d="M9 25h14l-2-7h-10z"/><circle cx="16" cy="21.2" r="1.6"/></svg>
         Tap to begin
       </button>
       <div class="lede" id="limitNote" style="font-size:clamp(16px,2.2vh,21px);margin-top:2.2vh">You'll have up to 30 seconds</div>
-      <div class="line-ok"><span>Phone line</span><div class="meter" id="meter"><span></span><span></span><span></span><span></span><span></span></div></div>
+      <div class="line-ok"><span>Mic check</span><div class="meter" id="meter"><span></span><span></span><span></span><span></span><span></span></div></div>
     </div>
 
     <div class="view" id="v-count">
-      <div class="h2" id="greetH">Listen&hellip;</div>
+      <div class="h2" id="greetH">Get ready</div>
       <div class="lede" id="greetLede"></div>
-      <div class="vm" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+      <div class="vm" aria-hidden="true" style="visibility:hidden"><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
     </div>
 
     <div class="view" id="v-record">
@@ -401,34 +400,23 @@ body.thx #stage,body.thx #cornerHot{opacity:0;pointer-events:none}
       <div class="hint full" style="grid-column:1/-1" id="fmtHint"></div>
     </div>
 
-    <h3>Voicemail greeting</h3>
+    <h3>Playback</h3>
     <div class="grid">
-      <div class="full" style="grid-column:1/-1">
-        <div class="row">
-          <input type="file" id="greetFile" accept="audio/*,.m4a,.mp3,.wav,.aac,.ogg" hidden>
-          <button class="sbtn dark" id="gUpload">Upload greeting</button>
-          <button class="sbtn" id="gPlay">Play</button>
-          <button class="sbtn warn" id="gRemove">Remove</button>
-          <span class="stat" id="gInfo">No greeting yet</span>
-        </div>
-        <p class="hint" style="margin-top:10px">Plays when a guest taps to start. The 3-2-1 countdown shows over the last 3 seconds, and recording starts the moment the clip ends, so end it with the beep. Silence after the beep is trimmed automatically. With no greeting, guests get a 3-second countdown and a beep.</p>
-      </div>
-      <label>Greeting volume<input type="range" min="0" max="2" step="0.05" data-k="greetVol"></label>
-      <label id="gOutWrap" style="display:none">Greeting &amp; message playback plays through<select id="selOut"></select></label>
-      <p class="hint" id="gOutHint" style="display:none;grid-column:1/-1;margin-top:-6px">Covers the couple's greeting when guests tap to start, and the guest's own recording playing back on the review screen — so everyone standing around can hear both, not just whoever's holding the handset.</p>
+      <label id="gOutWrap" style="display:none">Message playback plays through<select id="selOut"></select></label>
+      <p class="hint" id="gOutHint" style="display:none;grid-column:1/-1;margin-top:-6px">Routes the guest's own recording when it plays back on the review screen, so everyone standing around can hear it.</p>
     </div>
 
     <h3>Devices</h3>
     <div class="grid">
       <label>Camera<select id="selCam"></select></label>
-      <label>Microphone (telephone handset)<select id="selMic"></select></label>
+      <label>Microphone (DJI Mic 2)<select id="selMic"></select></label>
       <label>Mic sensitivity<input type="range" min="0.1" max="5" step="0.1" data-k="micGain"></label>
-      <p class="hint full" style="grid-column:1/-1;margin-top:-6px">If the level meter below is constantly red, lower this — many handset mics run hot and need to be turned down rather than up.</p>
+      <p class="hint full" style="grid-column:1/-1;margin-top:-6px">If the level meter below is constantly red, lower this. If it barely moves, raise it.</p>
       <div class="full row" style="grid-column:1/-1">
         <div id="adminMeter"></div>
         <button class="sbtn" id="aTestMic">Test mic (5s)</button>
         <button class="sbtn" id="aRefreshDev">Refresh devices</button>
-        <span class="hint" id="testHint">Plug in the handset mic, pick it here, then test — it plays back with the phone filter.</span>
+        <span class="hint" id="testHint">Pick the DJI Mic 2 receiver here, then test — it plays back with the phone filter applied.</span>
       </div>
     </div>
 
@@ -2776,7 +2764,7 @@ const DEFAULTS = {
   names: 'Trung & Tracy', subtitle: 'Video Guest Book',
   thanksTitle: 'Thank you', thanksMsg: 'Your message means the world to us. We can’t wait to watch it together.',
   thanksSig: 'With love, Trung & Tracy',
-  maxSec: 30, vcr: 'classic', phone: 'classic', stamp: true, mirror: true, noiseSup: true, greetVol: 1, outId: '', micGain: 2.2,
+  maxSec: 30, vcr: 'classic', phone: 'classic', stamp: true, mirror: true, noiseSup: true, greetVol: 1, outId: '', micGain: 0.9,
   camId: '', micId: '', uploadUrl: '', uploadKey: '', fallbackUrl: '', thanksTimeout: 45, dlCopy: false, pin: '1234'
 };
 const LS_KEY = 'vgb.settings.v1';
@@ -3221,15 +3209,11 @@ async function beginCountdown() {
   kiosk();
   if (!DEMO && (!Audio.stream || !Video.stream)) { toast('Camera or microphone not ready — check settings'); return; }
   setState('count');
-  const has = !!Greeting.buf;
-  $('#greetH').innerHTML = has ? 'Listen&hellip;' : 'Get ready';
-  $('#greetLede').textContent = has ? `A message from ${S.names}. Start talking after the beep.` : 'Hold the phone to your ear and start talking after the beep.';
-  $('.vm').style.visibility = has ? 'visible' : 'hidden';
+  $('#greetLede').textContent = 'Start talking after the beep.';
   shownCount = 0;
   try { if (Audio.ctx.state !== 'running') await Audio.ctx.resume(); } catch (e) {}
   if (state !== 'count') return;
-  if (has) Greeting.play(() => { if (state === 'count') goRecord(); });
-  else fbEnd = performance.now() + 3000;   // no greeting: 3-2-1 then a beep
+  fbEnd = performance.now() + 3000;   // 3-2-1 then a beep
 }
 function showCount(n) {
   const c = $('#count');
@@ -3453,7 +3437,7 @@ function openAdmin() {
   $$('#admin [data-k]').forEach(el => { const k = el.dataset.k; if (el.type === 'checkbox') el.checked = !!S[k]; else el.value = S[k]; });
   $$('#admin [data-seg]').forEach(seg => { const k = seg.dataset.seg; [...seg.children].forEach(b => b.classList.toggle('on', String(S[k]) === b.dataset.v)); });
   $('#admin').classList.add('on');
-  listDevices().catch(() => {}); refreshRecs().catch(() => {}); greetInfo();
+  listDevices().catch(() => {}); refreshRecs().catch(() => {});
   const m = pickMime();
   $('#fmtHint').textContent = 'Recording format: ' + (m || 'browser default') + (/avc1/.test(m) && /mp4a/.test(m) ? ' \u2014 plays on all phones \u2713' : /avc1/.test(m) ? ' \u2014 H.264 video, but AAC audio isn\u2019t available here; some iPhones may play without sound' : ' \u2014 H.264 not available here; iPhones may not play these files. Use Chrome on the Galaxy tablet or Safari on iPad.');
 }
@@ -3507,31 +3491,9 @@ $('#selCam').addEventListener('change', async e => { S.camId = e.target.value; s
 $('#selMic').addEventListener('change', async e => { S.micId = e.target.value; saveSettings(); try { await Audio.start(); toast('Microphone switched'); } catch (er) { toast('Mic: ' + er.message); } });
 $('#aRefreshDev').addEventListener('click', listDevices);
 
-function greetInfo() {
-  $('#gInfo').textContent = Greeting.buf
-    ? `${Greeting.name} · ${Greeting.buf.duration.toFixed(1)}s${Greeting.trimmed ? ` (trimmed ${Greeting.trimmed.toFixed(1)}s of silence at the end)` : ''}`
-    : 'No greeting yet — guests get a 3-second countdown';
-  $('#gPlay').disabled = $('#gRemove').disabled = !Greeting.buf;
-  $('#gPlay').style.opacity = $('#gRemove').style.opacity = Greeting.buf ? 1 : .4;
-}
-$('#gUpload').addEventListener('click', () => $('#greetFile').click());
-$('#greetFile').addEventListener('change', async e => {
-  const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-  $('#gInfo').textContent = 'Loading…';
-  try { await Greeting.set(f); toast('Greeting saved'); }
-  catch (er) { console.error(er); toast('Couldn’t read that audio file — try MP3, M4A or WAV', 4000); }
-  greetInfo();
-});
-$('#gPlay').addEventListener('click', async () => {
-  const b = $('#gPlay');
-  if (Greeting.node) { Greeting.stop(); b.textContent = 'Play'; return; }
-  if (Audio.ctx.state !== 'running') await Audio.ctx.resume();
-  b.textContent = 'Stop'; Greeting.play(() => { b.textContent = 'Play'; });
-});
-$('#gRemove').addEventListener('click', async e => { if (!confirmTwice(e.target)) return; await Greeting.clear(); greetInfo(); toast('Greeting removed'); });
 $('#selOut').addEventListener('change', async e => {
   S.outId = e.target.value; saveSettings();
-  try { await Audio.ctx.setSinkId(S.outId); toast('Greeting output switched'); } catch (er) { toast('Output: ' + er.message); }
+  try { await Audio.ctx.setSinkId(S.outId); toast('Playback output switched'); } catch (er) { toast('Output: ' + er.message); }
 });
 navigator.mediaDevices && navigator.mediaDevices.addEventListener && navigator.mediaDevices.addEventListener('devicechange', () => {
   if ($('#admin').classList.contains('on')) listDevices();
