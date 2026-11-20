@@ -422,7 +422,7 @@ body.thx #stage,body.thx #cornerHot{opacity:0;pointer-events:none}
     <div class="grid">
       <label>Camera<select id="selCam"></select></label>
       <label>Microphone (telephone handset)<select id="selMic"></select></label>
-      <label>Mic sensitivity<input type="range" min="0.1" max="1.5" step="0.05" data-k="micGain"></label>
+      <label>Mic sensitivity<input type="range" min="0.1" max="5" step="0.1" data-k="micGain"></label>
       <p class="hint full" style="grid-column:1/-1;margin-top:-6px">If the level meter below is constantly red, lower this — many handset mics run hot and need to be turned down rather than up.</p>
       <div class="full row" style="grid-column:1/-1">
         <div id="adminMeter"></div>
@@ -2776,7 +2776,7 @@ const DEFAULTS = {
   names: 'Trung & Tracy', subtitle: 'Video Guest Book',
   thanksTitle: 'Thank you', thanksMsg: 'Your message means the world to us. We can’t wait to watch it together.',
   thanksSig: 'With love, Trung & Tracy',
-  maxSec: 30, vcr: 'classic', phone: 'classic', stamp: true, mirror: true, noiseSup: true, greetVol: 1, outId: '', micGain: 0.7,
+  maxSec: 30, vcr: 'classic', phone: 'classic', stamp: true, mirror: true, noiseSup: true, greetVol: 1, outId: '', micGain: 2.2,
   camId: '', micId: '', uploadUrl: '', uploadKey: '', fallbackUrl: '', thanksTimeout: 45, dlCopy: false, pin: '1234'
 };
 const LS_KEY = 'vgb.settings.v1';
